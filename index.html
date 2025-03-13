@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>TallyKhata Web App</title>
+    <script src="eruda.min.js"></script>
+<script> eruda.init({        tool: ['console', 'elements', 'network', 'resources', 'info']    });    eruda.get().config.set('displaySize', 60);    eruda.remove('settings');</script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div>
+    <div class="container">
+    <center>
+      <!-- Add Customer Section -->
+      <form id="add-customer-form">
+        <input type="text" id="new-customer" placeholder="কাস্টমারের নাম" required>
+        <button type="submit">Add Customer</button>
+      </form>
+      <!-- Update Amount Section -->
+      <form id="update-transaction-form">
+        <select id="customer-select" required>
+          <option value="" disabled selected>Select Customer</option>
+        </select>
+        <div class="amount-buttons">
+          <input type="number" id="update-amount" placeholder="মোট টাকা" value="" required>
+        </div>
+       <div class="btn-group">
+        <button type="button" id="increment-amount">দিলাম</button>
+        <button type="button" id="decrement-amount">পেলাম</button>
+     </div>
+ </form>
+ </center>
+      </div>
+       <main>
+      <!-- Ledger Section -->
+      <section id="ledger">
+        <h2>বাকির তালিকা</h2>
+   <p id="total-amount">মোট বাকি: 0 BDT</p>
+        <ul id="ledger-list"></ul>
+      </section>
+    </main>
+     
+    <script type="module" src="script.js"></script>
+  </div>
+</body>
+</html>
