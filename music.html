@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>লাইভ অডিও প্লেলিস্ট</title>
+
+    <!-- CSS কোড -->
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        .player-container {
+            background: #ffffff;
+            padding: 25px 35px;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 380px;
+        }
+        .cover-art {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            border: 7px solid #fff;
+            object-fit: cover;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: transform 0.5s ease;
+        }
+        .player-container.playing .cover-art {
+            transform: rotate(360deg);
+            animation: rotate 20s linear infinite;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        #song-title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        #song-artist {
+            margin: 5px 0 20px 0;
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+        .status {
+            font-weight: 500;
+            color: #95a5a6;
+            margin-bottom: 15px;
+            min-height: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        .control-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 50%;
+            background-color: #ecf0f1;
+            color: #34495e;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .control-btn:hover {
+            background-color: #bdc3c7;
+        }
+        #play-pause-btn {
+            background-color: #3498db;
+            color: white;
+            width: 70px;
+            height: 70px;
+            font-size: 28px;
+        }
+        #play-pause-btn.pause {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div id="player-container" class="player-container">
+        <img src="https://i.imgur.com/M6aJz52.png" alt="কভার আর্ট" id="cover-art" class="cover-art">
+        <h2 id="song-title">গানের নাম</h2>
+        <p id="song-artist">শিল্পীর নাম</p>
+        <div id="status" class="status">প্লে করতে ক্লিক করুন</div>
+
+        <audio id="audio-stream" loop playsinline></audio>
+
+        <div class="controls">
+            <button id="prev-btn" class="control-btn">⏮️</button>
+            <button id="play-pause-btn" class="control-btn">▶️</button>
+            <button id="next-btn" class="control-btn">⏭️</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM елементগুলো নিয়ে আসা
+        const playerContainer = document.getElementById('player-container');
+        const audio = document.getElementById('audio-stream');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const coverArt = document.getElementById('cover-art');
+        const songTitle = document.getElementById('song-title');
+        const songArtist = document.getElementById('song-artist');
+        const statusDiv = document.getElementById('status');
+        
+        // --- আপনার প্লেলিস্ট এখানে তৈরি করুন ---
+        const playlist = [
+            {
+                title: 'Classical Fun',
+                artist: 'SoundHelix',
+                src: 'https://mkrcloud.mdmukterislam.workers.dev/download.aspx?file=s9kDaJJJ3bJg4cZim5edpe4F%2F48LP%2FUdWYQKYBEXyUnEdvWMikV005futO2Zmu0L&expiry=Fx8RNU%2BL7TUroEAh28tP4Q%3D%3D&mac=1e1d4b453242e5bc52acca2e2aa517f94235b836b9c26a84e080a46c3b50810b',
+                cover: 'https://picsum.photos/seed/song1/200',
+                duration: 371 // সেকেন্ডে গানের মোট সময়
+            },
+            {
+                title: 'Electronic Mood',
+                artist: 'SoundHelix',
+                src: 'https://mkrcloud.mdmukterislam.workers.dev/download.aspx?file=D1bEHanhue3gMINeUFiodTDU%2FStTVmS%2Fi0B%2FZW5kFlaS8EdiUZ5HM5M2MRsfMXmb&expiry=9N6LxK%2Fm7lEll5lJfNVjmQ%3D%3D&mac=f22dcf160454a04e47b5796e03bc70d99ddf7b3ab3b1efd1c0de691e4eef8004',
+                cover: 'https://picsum.photos/seed/song2/200',
+                duration: 418
+            },
+            {
+                title: 'Acoustic Pop',
+                artist: 'SoundHelix',
+                src: 'https://mkrcloud.mdmukterislam.workers.dev/download.aspx?file=Ha5M7EiVUoD9fTL6SEVXiqeMT7HfGRwJBO142KflLrKnv9Sc0FuLvkYOi2T%2F69Hj&expiry=%2BPDGsW4snz%2FKcIBj67eysQ%3D%3D&mac=a94eb44fb5ef7a83f56b669779dda0192a04902a0c2c9b60a91d674dad69a9f4',
+                cover: 'https://picsum.photos/seed/song3/200',
+                duration: 298
+            }
+        ];
+
+        let currentSongIndex = 0;
+        let isPlayerInitialized = false;
+
+        // গান লোড করার ফাংশন
+        function loadSong(index) {
+            const song = playlist[index];
+            songTitle.textContent = song.title;
+            songArtist.textContent = song.artist;
+            coverArt.src = song.cover;
+            audio.src = song.src;
+            currentSongIndex = index;
+        }
+
+        // লাইভ স্ট্রিম সিঙ্ক করার মূল লজিক
+        const syncLiveStream = () => {
+            const streamEpoch = new Date('2024-01-01T00:00:00Z').getTime();
+            const totalPlaylistDuration = playlist.reduce((total, song) => total + song.duration, 0);
+
+            if (totalPlaylistDuration === 0) return;
+
+            // পুরো প্লেলিস্টের হিসেবে এখন কোন সেকেন্ডে থাকা উচিত
+            const globalTime = (Date.now() - streamEpoch) / 1000;
+            let globalPlaybackPosition = globalTime % totalPlaylistDuration;
+            
+            // কোন গানটি এখন বাজা উচিত তা খুঁজে বের করা
+            let songToPlayIndex = 0;
+            let timeAccumulator = 0;
+            for (let i = 0; i < playlist.length; i++) {
+                timeAccumulator += playlist[i].duration;
+                if (globalPlaybackPosition < timeAccumulator) {
+                    songToPlayIndex = i;
+                    break;
+                }
+            }
+
+            // ওই গানের লোকাল প্লেব্যাক পজিশন গণনা
+            const previousSongsDuration = playlist.slice(0, songToPlayIndex).reduce((total, song) => total + song.duration, 0);
+            const localPlaybackPosition = globalPlaybackPosition - previousSongsDuration;
+
+            // যদি গান ভিন্ন হয়, তাহলে নতুন গান লোড করুন
+            if (currentSongIndex !== songToPlayIndex) {
+                loadSong(songToPlayIndex);
+            }
+            
+            // গানটি সঠিক সময়ে সেট করুন
+            audio.currentTime = localPlaybackPosition;
+        };
+
+        // গান প্লে করার ফাংশন
+        function playAudio() {
+            playerContainer.classList.add('playing');
+            playPauseBtn.innerHTML = '⏸️';
+            audio.play().catch(error => {
+                console.error("Play failed:", error);
+                pauseAudio();
+            });
+        }
+
+        // গান পজ করার ফাংশন
+        function pauseAudio() {
+            playerContainer.classList.remove('playing');
+            playPauseBtn.innerHTML = '▶️';
+            audio.pause();
+        }
+
+        // প্লে/পজ বাটনের লজিক
+        playPauseBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                if (!isPlayerInitialized) {
+                    // প্রথমবার প্লে করার জন্য ব্রাউজারের অনুমতি নেওয়া
+                    audio.play().then(() => {
+                        audio.muted = false;
+                        isPlayerInitialized = true;
+                        syncLiveStream();
+                        playAudio();
+                        statusDiv.textContent = 'লাইভ চলছে';
+                    }).catch(error => {
+                        statusDiv.textContent = 'প্লে করতে ব্যর্থ';
+                    });
+                } else {
+                    syncLiveStream(); // বিরতির পর আবার সিঙ্ক করা
+                    playAudio();
+                    statusDiv.textContent = 'লাইভ চলছে';
+                }
+            } else {
+                pauseAudio();
+                statusDiv.textContent = 'বিরতি';
+            }
+        });
+
+        // পরের গানে যাওয়ার ফাংশন
+        function nextSong() {
+            currentSongIndex = (currentSongIndex + 1) % playlist.length;
+            loadSong(currentSongIndex);
+            playAudio();
+            statusDiv.textContent = 'পরের গান'; // ব্যবহারকারী নিজে গান পরিবর্তন করেছে
+        }
+
+        // আগের গানে যাওয়ার ফাংশন
+        function prevSong() {
+            currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
+            loadSong(currentSongIndex);
+            playAudio();
+            statusDiv.textContent = 'আগের গান'; // ব্যবহারকারী নিজে গান পরিবর্তন করেছে
+        }
+
+        // গান শেষ হলে স্বয়ংক্রিয়ভাবে পরের গান লোড হবে
+        audio.addEventListener('ended', nextSong);
+
+        // বাটনগুলোতে ইভেন্ট যুক্ত করা
+        nextBtn.addEventListener('click', nextSong);
+        prevBtn.addEventListener('click', prevSong);
+        
+        // শুরুতে প্রথম গানটি লোড করে রাখা
+        loadSong(0);
+        audio.muted = true; // অটোপ্লের জন্য মিউট করে শুরু করা
+
+    </script>
+</body>
+  </html>
